@@ -26,7 +26,7 @@ main = do
     hSeek handle AbsoluteSeek pos
     
     case decode parser expr of
-        Left _ -> print "parse error" >> hClose handle
+        Left err -> print err >> hClose handle
         Right xs -> do 
                     hPutStr handle (map toLower (show $ head xs))
                     hClose handle

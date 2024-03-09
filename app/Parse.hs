@@ -9,9 +9,10 @@ import Data.SCargot
 import Data.SCargot.Repr.Basic
 import Data.Text (Text, pack)
 import Numeric (readDec)
-import Text.Parsec (anyChar, char, digit, many1, manyTill, newline, satisfy, string)
+
 import Text.Parsec.Text (Parser)
 import Data.Functor (($>))
+import Text.Parsec (satisfy, many1, char, digit)
 
 data Op = Add | Sub | Mul | Div deriving (Eq, Show)
 
@@ -30,12 +31,6 @@ pAtom = (ANum . read <$> many1 digit)
      <|> (char '-' $> AOp Sub)
      <|> (char '*' $> AOp Mul)
      <|> (char '/' $> AOp Div)
-
-sAtom :: Atom -> Text
-sAtom (AOp Add) = "+"
-sAtom (AOp Sub) = "-"
-sAtom (AOp Mul) = "*"
-sAtom (ANum n)  = pack (show n)
 
 decReader :: Reader Atom
 decReader _ = A . ANum . rd <$> many1 (satisfy isDigit)
