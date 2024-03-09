@@ -5,6 +5,7 @@ module Parse where
 import Control.Applicative ((<|>))
 import Data.Char (isDigit)
 import Data.SCargot
+    ( addReader, mkParser, setCarrier, Reader, SExprParser )
 import Data.SCargot.Repr.Basic
 import Data.Text (Text, pack)
 import Numeric (readDec)
