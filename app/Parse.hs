@@ -10,20 +10,14 @@ import Data.Text (Text, pack)
 import Numeric (readDec)
 import Text.Parsec (anyChar, char, digit, many1, manyTill, newline, satisfy, string)
 import Text.Parsec.Text (Parser)
+import Data.Functor (($>))
 
--- Our operators are going to represent addition, subtraction, or
--- multiplication
 data Op = Add | Sub | Mul | Div deriving (Eq, Show)
 
--- The atoms of our language are either one of the aforementioned
--- operators, or positive integers
 data Atom = AOp Op | ANum Int deriving (Eq, Show)
 
--- Once parsed, our language will consist of the applications of
--- binary operators with literal integers at the leaves
 data Expr = Op Op Expr Expr | Num Int deriving (Eq, Show)
 
--- Conversions to and from our Expr type
 toExpr :: SExpr Atom -> Either String Expr
 toExpr (A (AOp op) ::: l ::: r ::: Nil) = Op op <$> toExpr l <*> toExpr r
 toExpr (A (ANum n)) = pure (Num n)
@@ -33,13 +27,12 @@ fromExpr :: Expr -> SExpr Atom
 fromExpr (Op op l r) = A (AOp op) ::: fromExpr l ::: fromExpr r ::: Nil
 fromExpr (Num n)     = A (ANum n) ::: Nil
 
--- Parser and serializer for our Atom type
 pAtom :: Parser Atom
-pAtom = ((ANum . read) <$> many1 digit)
-     <|> (char '+' *> pure (AOp Add))
-     <|> (char '-' *> pure (AOp Sub))
-     <|> (char '*' *> pure (AOp Mul))
-     <|> (char '/' *> pure (AOp Div))
+pAtom = (ANum . read <$> many1 digit)
+     <|> (char '+' $> AOp Add)
+     <|> (char '-' $> AOp Sub)
+     <|> (char '*' $> AOp Mul)
+     <|> (char '/' $> AOp Div)
 
 sAtom :: Atom -> Text
 sAtom (AOp Add) = "+"
@@ -48,15 +41,14 @@ sAtom (AOp Mul) = "*"
 sAtom (ANum n)  = pack (show n)
 
 decReader :: Reader Atom
-decReader _ = (A . ANum . rd) <$> many1 (satisfy isDigit)
+decReader _ = A . ANum . rd <$> many1 (satisfy isDigit)
   where rd = fst . head . readDec
 
--- Our final s-expression parser and printer:
 myLangParser :: SExprParser Atom Expr
 myLangParser
-  = addReader '#' decReader     -- add dec reader
-  $ setCarrier toExpr           -- convert final repr to Expr
-  $ mkParser pAtom              -- create spec with Atom type
+  = addReader '#' decReader     
+  $ setCarrier toExpr           
+  $ mkParser pAtom              
 
 mkLangPrinter :: SExprPrinter Atom Expr
 mkLangPrinter
