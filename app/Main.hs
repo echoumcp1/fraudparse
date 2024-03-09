@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
-import Parse ( myLangParser )
+import Parse ( parser )
 import Prelude hiding (getLine)
 import Data.SCargot
 import System.IO
@@ -25,7 +25,7 @@ main = do
     hSetFileSize handle pos
     hSeek handle AbsoluteSeek pos
     
-    case decode myLangParser expr of
+    case decode parser expr of
         Left _ -> print "parse error" >> hClose handle
         Right xs -> do 
                     hPutStr handle (map toLower (show $ head xs))
