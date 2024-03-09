@@ -1,9 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
-import Parse
+import Parse ( myLangParser )
 import Prelude hiding (getLine)
 import Data.SCargot
-import System.IO hiding (getLine)
+import System.IO
+    ( hClose,
+      hSeek,
+      hSetFileSize,
+      hPutStr,
+      openFile,
+      SeekMode(AbsoluteSeek),
+      IOMode(ReadWriteMode) )
 import Data.Text.IO (getLine) 
 import Data.Char (toLower)
 import System.Process (readProcess, callCommand)

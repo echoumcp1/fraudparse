@@ -7,7 +7,7 @@ import Data.Char (isDigit)
 import Data.SCargot
 import Data.SCargot.Repr.Basic
 import Data.Text (Text, pack)
-import Numeric (readHex)
+import Numeric (readDec)
 import Text.Parsec (anyChar, char, digit, many1, manyTill, newline, satisfy, string)
 import Text.Parsec.Text (Parser)
 
@@ -47,19 +47,14 @@ sAtom (AOp Sub) = "-"
 sAtom (AOp Mul) = "*"
 sAtom (ANum n)  = pack (show n)
 
--- Our custom reader macro: grab the parse stream and read a
--- hexadecimal number from it:
-hexReader :: Reader Atom
-hexReader _ = (A . ANum . rd) <$> many1 (satisfy isHexDigit)
-  where isHexDigit c = isDigit c || c `elem` hexChars
-        rd = fst . head . readHex
-        hexChars :: String
-        hexChars = "AaBbCcDdEeFf"
+decReader :: Reader Atom
+decReader _ = (A . ANum . rd) <$> many1 (satisfy isDigit)
+  where rd = fst . head . readDec
 
 -- Our final s-expression parser and printer:
 myLangParser :: SExprParser Atom Expr
 myLangParser
-  = addReader '#' hexReader     -- add hex reader
+  = addReader '#' decReader     -- add dec reader
   $ setCarrier toExpr           -- convert final repr to Expr
   $ mkParser pAtom              -- create spec with Atom type
 
