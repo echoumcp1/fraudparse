@@ -1,40 +1,31 @@
 {-# LANGUAGE OverloadedStrings #-}
-
 module Parse where
+import AST
+import RacketVal
+import SExpr
+import Data.Text (Text)
 
-import Control.Applicative ((<|>))
-import Data.Char (isDigit)
-import Data.SCargot
-    ( addReader, mkParser, setCarrier, Reader, SExprParser )
-import Data.SCargot.Repr.Basic
-import Data.Text (Text, pack)
-import Numeric (readDec)
+parse :: RacketVal -> Expr
+parse (Number i)                        = Integer i
+parse (Bool b)                          = Boolean b
+parse (Char c)                          = Character c
+parse (Atom s)                          = Var s
+parse (List [Atom "not", e])            = If (parse e) (Boolean False) (Boolean True)
+parse (List [Atom "begin", e1, e2])     = Begin (parse e1) (parse e2)
+parse (List [Atom "let", List bs, e])   = parseLet bs e
+parse (List [Atom "if", e1, e2, e3])    = If (parse e1) (parse e2) (parse e3)
+parse (List [Atom op0])                 = Prim0 (stringToOp0 op0)
+parse (List [Atom op1, e])              = Prim1 (stringToOp1 op1) (parse e)
+parse (List [Atom op2, e1, e2])         = Prim2 (stringToOp2 op2) (parse e1) (parse e2)
+parse (List (Atom opN:xs))              = PrimN (stringToOpN opN) (map parse xs) -- to do: fix opN so (+) is a valid expression
+parse _                                 = error "parse error"
 
-import Text.Parsec.Text (Parser)
-import Data.Functor (($>))
-import Text.Parsec (satisfy, many1, char, digit)
+parseLet :: [RacketVal] -> RacketVal -> Expr
+parseLet [] e                           = Let [] [] (parse e)
+parseLet ((List [Atom id, e1]):bs) e    = let (Let xs es e') = parseLet bs e in Let (id:xs) (parse e1:es) e'
+parseLet _ _                            = error "let parse error"
 
-data Op = Add | Sub | Mul | Div deriving (Eq, Show)
-
-data Atom = AOp Op | ANum Int deriving (Eq, Show)
-
-data Expr = Op Op Expr Expr | Num Int deriving (Eq, Show)
-
-toExpr :: SExpr Atom -> Either String Expr
-toExpr (A (AOp op) ::: l ::: r ::: Nil) = Op op <$> toExpr l <*> toExpr r
-toExpr (A (ANum n)) = pure (Num n)
-toExpr sexpr = Left ("Unable to parse expression: " ++ show sexpr)
-
-pAtom :: Parser Atom
-pAtom = (ANum . read <$> many1 digit)
-     <|> (char '+' $> AOp Add)
-     <|> (char '-' $> AOp Sub)
-     <|> (char '*' $> AOp Mul)
-     <|> (char '/' $> AOp Div)
-
-decReader :: Reader Atom
-decReader _ = A . ANum . rd <$> many1 (satisfy isDigit)
-  where rd = fst . head . readDec
-
-parser :: SExprParser Atom Expr
-parser = addReader '#' decReader $ setCarrier toExpr $ mkParser pAtom              
+parseSExpr :: Text -> Expr
+parseSExpr s = case readExpr s of
+    Left _ -> error "invalid s-expression"
+    Right e -> parse e

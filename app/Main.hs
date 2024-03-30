@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
-import Parse ( parser )
 import Prelude hiding (getLine)
 import Data.SCargot
 import System.IO
@@ -14,6 +13,7 @@ import System.IO
 import Data.Text.IO (getLine) 
 import Data.Char (toLower)
 import System.Process (readProcess, callCommand)
+import SExpr
 
 main :: IO ()
 main = do
@@ -24,10 +24,10 @@ main = do
     handle <- openFile path ReadWriteMode
     hSetFileSize handle pos
     hSeek handle AbsoluteSeek pos
-    
-    case decode parser expr of
+
+    case readExpr expr of
         Left err -> print err >> hClose handle
         Right xs -> do 
-                    hPutStr handle (map toLower (show $ head xs))
+                    hPutStr handle (map toLower (show xs))
                     hClose handle
                     callCommand "cd ../arith/; lake build; cd .lake; ./build/bin/arith"
