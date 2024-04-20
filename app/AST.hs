@@ -6,10 +6,14 @@ data Op0
     = ReadByte 
     | PeekByte deriving (Show)
 
+validOp0 :: [Text]
+validOp0 = ["read-byte",
+            "peek-byte"]
+            
 stringToOp0 :: Text -> Op0
 stringToOp0 "read-byte" = ReadByte
 stringToOp0 "peek-byte" = PeekByte
-stringToOp0 "_"         = error "invalid op0"
+stringToOp0 _           = error "invalid op0"
 
 data Op1 
     = Add1
@@ -24,6 +28,20 @@ data Op1
     | Abs
     | IntHuh
     | BoolHuh deriving (Show)
+
+validOp1 :: [Text]
+validOp1 = ["add1", 
+            "sub1", 
+            "zero?", 
+            "char?", 
+            "int->char", 
+            "char->int", 
+            "write-byte", 
+            "eof-object?", 
+            "-", 
+            "abs", 
+            "integer?", 
+            "boolean?"]
 
 stringToOp1 :: Text -> Op1
 stringToOp1 "add1"          = Add1
@@ -42,11 +60,17 @@ stringToOp1 _               = error "invalid op1"
 
 data Op2 = Sub deriving (Show)
 
+validOp2 :: [Text]
+validOp2 = ["-"]
+
 stringToOp2 :: Text -> Op2
 stringToOp2 "-" = Sub
 stringToOp2 _   = error "invalid op2"
 
 data OpN = Add deriving (Show)
+
+validOpN :: [Text]
+validOpN = ["+"]
 
 stringToOpN :: Text -> OpN
 stringToOpN "+" = Add
@@ -54,11 +78,10 @@ stringToOpN _   = error "invalid opN"
 
 type Id = Text
 
--- data Clause a = Clause a Expr deriving (Show)
+data Clause a = Clause a Expr deriving (Show)
 
--- data Datum = Integer Int | Boolean Bool | Character Char deriving (Show)
--- type CondClause = Clause Expr
--- type CaseClause = Clause [Datum]
+type CondClause = Clause Expr
+type CaseClause = Clause [Expr]
 
 data Expr
     = Integer Integer
@@ -71,7 +94,7 @@ data Expr
     | If Expr Expr Expr
     | Begin Expr Expr
     | Let [Id] [Expr] Expr
-    | Var Id deriving (Show)
---    | LetStar [Id] [Expr] Expr
---    | Cond [CondClause] Expr
---    | Case Expr [CaseClause] Expr deriving (Show)
+    | Var Id
+    | LetStar [Id] [Expr] Expr
+    | Cond [CondClause] Expr
+    | Case Expr [CaseClause] Expr deriving (Show)
