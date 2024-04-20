@@ -93,7 +93,7 @@ data Expr
     | PrimN OpN [Expr]
     | If Expr Expr Expr
     | Begin Expr Expr
-    | Let [Id] [Expr] Expr
+    | LetStd [Id] [Expr] Expr
     | Var Id
     | LetStar [Id] [Expr] Expr
     | Cond [CondClause] Expr

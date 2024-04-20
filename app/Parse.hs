@@ -26,8 +26,8 @@ parse (List (Atom opN:xs))      | opN `elem` validOpN   = PrimN (stringToOpN opN
 parse _                                                 = error "parse error"
 
 parseLet :: [RacketVal] -> RacketVal -> Expr
-parseLet [] e                           = Let [] [] (parse e)
-parseLet ((List [Atom id, e1]):bs) e    = let (Let xs es e') = parseLet bs e in Let (id:xs) ((parse e1):es) e'
+parseLet [] e                           = LetStd [] [] (parse e)
+parseLet ((List [Atom id, e1]):bs) e    = let (LetStd xs es e') = parseLet bs e in LetStd (id:xs) ((parse e1):es) e'
 parseLet _ _                            = error "let parse error"
 
 parseLetStar :: [RacketVal] -> RacketVal -> Expr

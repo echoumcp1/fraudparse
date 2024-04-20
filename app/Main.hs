@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 import Prelude hiding (getLine)
-import Data.SCargot
 import System.IO
     ( hClose,
       hSeek,
